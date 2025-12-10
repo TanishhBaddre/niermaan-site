@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic"; // 🚨 FIX: prevents prerendering error
+
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -17,9 +19,10 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
 
-  // If user already "logged in", skip to payment
+  // If user already logged in → go directly to payment
   useEffect(() => {
     const user = localStorage.getItem("user");
+
     if (user && mentor && slot && duration) {
       router.push(
         `/payment?mentor=${mentor}&slot=${encodeURIComponent(

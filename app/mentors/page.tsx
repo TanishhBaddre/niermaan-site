@@ -1,6 +1,9 @@
 import { Suspense } from "react";
 import MentorsInner from "./MentorsInner";
 
+// 🔴 CRITICAL: this disables static prerendering
+export const dynamic = "force-dynamic";
+
 export default function MentorsPage() {
   return (
     <Suspense

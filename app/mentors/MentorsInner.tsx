@@ -69,6 +69,7 @@ export default function MentorsInner() {
             </div>
 
             <h3 className="text-xl font-semibold">{m.full_name}</h3>
+
             <p className="text-slate-600 text-sm mt-1">
               {m.headline || "Verified Mentor"}
             </p>

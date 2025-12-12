@@ -1,5 +1,3 @@
-"use client";
-
 import { Suspense } from "react";
 import MentorsInner from "./MentorsInner";
 
@@ -16,4 +14,3 @@ export default function MentorsPage() {
     </Suspense>
   );
 }
- 

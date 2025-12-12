@@ -1,12 +1,15 @@
-"use client";
-
-import { Suspense } from "react";
 import AuthInner from "./AuthInner";
 
-export default function AuthPage() {
+export default function AuthPage({
+  searchParams,
+}: {
+  searchParams?: { mentor?: string; slot?: string; duration?: string };
+}) {
   return (
-    <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
-      <AuthInner />
-    </Suspense>
+    <AuthInner
+      mentor={searchParams?.mentor ?? null}
+      slot={searchParams?.slot ?? null}
+      duration={searchParams?.duration ?? null}
+    />
   );
 }

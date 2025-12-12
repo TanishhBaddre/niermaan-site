@@ -1,12 +1,15 @@
-"use client";
-
-import { Suspense } from "react";
 import PaymentInner from "./PaymentInner";
 
-export default function PaymentPage() {
+export default function PayPage({
+  searchParams,
+}: {
+  searchParams?: { mentor?: string; slot?: string; duration?: string };
+}) {
   return (
-    <Suspense fallback={<div className="p-10 text-center">Loading payment...</div>}>
-      <PaymentInner />
-    </Suspense>
+    <PaymentInner
+      mentor={searchParams?.mentor ?? null}
+      slot={searchParams?.slot ?? null}
+      duration={searchParams?.duration ?? null}
+    />
   );
 }

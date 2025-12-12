@@ -1,19 +1,27 @@
-import { Suspense } from "react";
-import MentorsInner from "./MentorsInner";
+import MentorsClient from "./MentorsClient";
 
-// 🔴 CRITICAL: this disables static prerendering
 export const dynamic = "force-dynamic";
 
-export default function MentorsPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="p-20 text-center text-slate-500">
-          Loading mentors…
-        </main>
-      }
-    >
-      <MentorsInner />
-    </Suspense>
-  );
+type Mentor = {
+  id: string;
+  full_name: string;
+  headline?: string;
+  bio?: string;
+};
+
+export default async function MentorsPage({
+  searchParams,
+}: {
+  searchParams?: { country?: string };
+}) {
+  const country = searchParams?.country ?? null;
+
+  const url = country
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/mentors?country=${country}`
+    : `${process.env.NEXT_PUBLIC_BASE_URL}/api/mentors`;
+
+  const res = await fetch(url, { cache: "no-store" });
+  const mentors: Mentor[] = await res.json();
+
+  return <MentorsClient mentors={mentors} country={country} />;
 }

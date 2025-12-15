@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import { createSupabaseServer } from "@/lib/supabaseServer";
 
-export async function GET(req: Request, context: { params: { id: string } }) {
-  const supabase = await createSupabaseServerClient();
+
+export async function GET(
+  _: Request,
+  { params }: { params: { id: string } }
+) {
+  const supabase = createSupabaseServer();
 
   const { data, error } = await supabase
     .from("mentors")
     .select("*")
-    .eq("id", context.params.id)
+    .eq("id", params.id)
     .single();
 
-  return NextResponse.json({ data, error });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 404 });
+  }
+
+  return NextResponse.json(data);
 }

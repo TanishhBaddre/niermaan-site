@@ -1,18 +1,12 @@
-export const runtime = "nodejs";
-
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 export async function POST(req: Request) {
   const { bookingId } = await req.json();
 
-  if (!bookingId) {
-    return NextResponse.json({ error: "Missing bookingId" }, { status: 400 });
-  }
-
   const { error } = await supabaseAdmin
     .from("bookings")
-    .update({ status: "confirmed" })
+    .update({ status: "accepted" })
     .eq("id", bookingId);
 
   if (error) {

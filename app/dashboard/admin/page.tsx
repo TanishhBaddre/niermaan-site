@@ -1,10 +1,12 @@
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { redirect } from "next/navigation";
+import { createSupabaseServer } from "@/lib/supabaseServer";
 import { Th, Td } from "@/components/Table";
-import { Users, GraduationCap, CalendarDays } from "lucide-react";
+import { Users, GraduationCap, CalendarDays, User, Book, DollarSign } from "lucide-react";
+
+
 
 export default async function AdminDashboard() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServer();
 
   const {
     data: { user },

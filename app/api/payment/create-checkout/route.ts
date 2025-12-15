@@ -1,31 +1,29 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-11-17.clover",
+});
 
 export async function POST(req: Request) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { bookingId } = await req.json();
+  const { price, bookingId } = await req.json();
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    payment_method_types: ["card"],
     line_items: [
       {
-        price: process.env.STRIPE_PRICE_ID!,
+        price_data: {
+          currency: "gbp",
+          product_data: { name: "Mentor Session" },
+          unit_amount: price * 100,
+        },
         quantity: 1,
       },
     ],
-    customer_email: user.email!,
-    client_reference_id: bookingId,
-    success_url: process.env.STRIPE_SUCCESS_URL!,
-    cancel_url: process.env.STRIPE_CANCEL_URL!,
-  metadata: {
-  bookingId,
-},
-});
+    metadata: { bookingId },
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/cancel`,
+  });
 
   return NextResponse.json({ url: session.url });
 }

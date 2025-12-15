@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import { createSupabaseServer } from "@/lib/supabaseServer";
+
 import {
   Calendar,
   Users,
@@ -11,7 +12,7 @@ import {
 } from "lucide-react";
 
 export default async function MentorDashboard() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServer();
 
   const {
     data: { user },

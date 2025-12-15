@@ -1,10 +1,8 @@
-export const runtime = "nodejs";
-
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import { createSupabaseServer } from "@/lib/supabaseServer";
 
 export async function GET() {
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseServer();
 
   const { data, error } = await supabase
     .from("mentors")
@@ -14,25 +12,5 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
-}
-
-export async function PATCH(req: Request) {
-  const supabase = createSupabaseServerClient();
-  const { id, approved } = await req.json();
-
-  if (!id) {
-    return NextResponse.json({ error: "Missing mentor id" }, { status: 400 });
-  }
-
-  const { error } = await supabase
-    .from("mentors")
-    .update({ approved })
-    .eq("id", id);
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ success: true });
+  return NextResponse.json(data);
 }

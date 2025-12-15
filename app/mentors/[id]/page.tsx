@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import { createSupabaseServer } from "@/lib/supabaseServer";
+
 
 export default async function MentorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   if (!id) return notFound();
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServer();
   const { data: mentor } = await supabase
     .from("mentors")
     .select("*")

@@ -22,7 +22,10 @@ export async function POST(req: Request) {
     client_reference_id: bookingId,
     success_url: process.env.STRIPE_SUCCESS_URL!,
     cancel_url: process.env.STRIPE_CANCEL_URL!,
-  });
+  metadata: {
+  bookingId,
+},
+});
 
   return NextResponse.json({ url: session.url });
 }

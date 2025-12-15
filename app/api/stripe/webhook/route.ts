@@ -1,46 +1,55 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import Stripe from "stripe";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-
-
-export const runtime = "nodejs";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { stripe } from "@/lib/stripe";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: Request) {
-  const rawBody = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const body = await req.text();
+  const signature = headers().get("stripe-signature");
 
-  let event;
+  if (!signature) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+  }
+
+  let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(
-      rawBody,
-      sig,
+      body,
+      signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-  } catch (err: any) {
-    console.error("❌ Webhook signature invalid", err);
+  } catch (err) {
+    console.error("❌ Webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  // ✅ PAYMENT COMPLETED
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object as any;
+    const session = event.data.object as Stripe.Checkout.Session;
 
-    const bookingId = session.client_reference_id;
+    const bookingId = session.metadata?.bookingId;
 
-    console.log("✔ Payment successful for booking:", bookingId);
-
-    if (bookingId) {
-      const supabase = supabaseAdmin;
-
-
-      await supabase
-        .from("bookings")
-        .update({ status: "confirmed" })
-        .eq("id", bookingId);
+    if (!bookingId) {
+      console.error("❌ No bookingId in Stripe metadata");
+      return NextResponse.json({ received: true });
     }
+
+    const supabase = createAdminClient();
+
+    const { error } = await supabase
+      .from("bookings")
+      .update({ status: "confirmed" })
+      .eq("id", bookingId);
+
+    if (error) {
+      console.error("❌ Failed to update booking:", error);
+      return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+    }
+
+    console.log(`✅ Booking ${bookingId} marked as CONFIRMED`);
   }
 
-  return NextResponse.json({ received: true }, { status: 200 });
+  return NextResponse.json({ received: true });
 }

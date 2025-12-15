@@ -1,31 +1,53 @@
 import Link from "next/link";
+import { headers } from "next/headers";
+
+export const dynamic = "force-dynamic";
 
 type Mentor = {
   id: string;
   full_name: string;
-  headline?: string;
-  bio?: string;
+  headline?: string | null;
+  bio?: string | null;
 };
 
-export default async function MentorsPage() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/mentors`,
-    { cache: "no-store" }
-  );
+export default async function MentorsPage({
+  searchParams,
+}: {
+  searchParams?: { country?: string };
+}) {
+  const country = searchParams?.country;
+
+  // ✅ Build ABSOLUTE URL (required in Server Components)
+  const host = headers().get("host");
+  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+
+  const url = country
+    ? `${protocol}://${host}/api/mentors?country=${encodeURIComponent(country)}`
+    : `${protocol}://${host}/api/mentors`;
+
+  const res = await fetch(url, { cache: "no-store" });
 
   if (!res.ok) {
-    return (
-      <main className="p-20 text-center">
-        Failed to load mentors
-      </main>
-    );
+    throw new Error("Failed to load mentors");
   }
 
   const mentors: Mentor[] = await res.json();
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-16">
-      <h1 className="text-4xl font-bold mb-10">All Mentors</h1>
+      <h1 className="text-4xl font-bold mb-3">
+        {country ? `${country.toUpperCase()} Mentors` : "All Mentors"}
+      </h1>
+
+      <p className="text-slate-600 mb-10">
+        Verified mentors from top global universities.
+      </p>
+
+      {mentors.length === 0 && (
+        <p className="text-center text-slate-500 text-lg p-20">
+          No mentors found.
+        </p>
+      )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {mentors.map((m) => (

@@ -1,52 +1,49 @@
-import Stripe from "stripe";
 import { NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe";
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const secretKey = process.env.STRIPE_SECRET_KEY;
+    console.log("🔥 /api/payment route hit");
 
-    if (!secretKey) {
-      console.error("Stripe error: STRIPE_SECRET_KEY is missing");
+    const body = await req.json();
+    const { bookingId, mentorName, price } = body;
+
+    if (!bookingId || !price) {
       return NextResponse.json(
-        { error: "missing_key", message: "STRIPE_SECRET_KEY is not set" },
-        { status: 500 }
+        { error: "Missing bookingId or price" },
+        { status: 400 }
       );
     }
 
-    const stripe = new Stripe(secretKey, {
-      apiVersion: "2025-11-17.clover",
-    });
-
-    const body = await request.json();
-
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
       mode: "payment",
+
       line_items: [
         {
           price_data: {
             currency: "gbp",
             product_data: {
-              name: body.productName,
-              description: body.description,
+              name: mentorName ?? "Mentor Session",
             },
-            unit_amount: body.amount * 100, // in pence
+            unit_amount: price * 100,
           },
           quantity: 1,
         },
       ],
-      success_url: process.env.STRIPE_SUCCESS_URL as string,
-      cancel_url: process.env.STRIPE_CANCEL_URL as string,
+
+      metadata: {
+        bookingId,
+      },
+
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/cancel`,
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (err: any) {
-    console.error("Stripe error:", err);
+  } catch (err) {
+    console.error("Stripe checkout error:", err);
     return NextResponse.json(
-      {
-        error: "stripe_error",
-        message: err?.message || "Unknown Stripe error",
-      },
+      { error: "Stripe checkout failed" },
       { status: 500 }
     );
   }

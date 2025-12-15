@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Search, Calendar, GraduationCap, MapPin } from "lucide-react";
 
 type Mentor = {
@@ -16,6 +16,7 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
   const [query, setQuery] = useState("");
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [loading, setLoading] = useState(false);
+
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -29,7 +30,6 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
       const res = await fetch(`/api/mentors?q=${encodeURIComponent(query)}`);
       const data = await res.json();
 
-      // 🔒 Always turn the response into an ARRAY
       const list: Mentor[] = Array.isArray(data)
         ? data
         : Array.isArray(data?.data)
@@ -40,17 +40,13 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
     } catch (e) {
       console.error(e);
       alert("Failed to load mentors");
-      setMentors([]); // fallback to empty array
+      setMentors([]);
     } finally {
       setLoading(false);
     }
   }
 
-  function openBookingForm(mentor: Mentor) {
-    setSelectedMentor(mentor);
-  }
-
-  async function handleCreateBooking(e: React.FormEvent) {
+  async function handleCreateBooking(e: FormEvent) {
     e.preventDefault();
     if (!selectedMentor) return;
 
@@ -70,11 +66,12 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
           mentorId: selectedMentor.id,
           scheduledAt,
           program,
-          notes,
-        }),
+          notes
+        })
       });
 
       const data = await res.json();
+
       if (!res.ok) {
         console.error(data);
         alert(data.error || "Failed to create booking");
@@ -87,7 +84,7 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
       setTime("");
       setProgram("");
       setNotes("");
-      onBooked?.(); // call only if provided
+      onBooked?.();
     } finally {
       setCreating(false);
     }
@@ -99,29 +96,28 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
         <h2 className="text-xl font-bold text-gray-900">Find a Mentor</h2>
       </div>
 
-      {/* Search Bar */}
       <div className="flex gap-2">
         <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg border flex-1">
           <Search className="text-gray-600" />
           <input
             type="text"
             placeholder="Search by country, university, or program..."
-            className="bg-transparent w-full outline-none text-gray-100"
+            className="bg-transparent w-full outline-none text-gray-900 placeholder:text-gray-500"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
+
         <button
           type="button"
           onClick={handleSearch}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-60"
           disabled={loading}
         >
           {loading ? "Searching..." : "Search"}
         </button>
       </div>
 
-      {/* Mentor Results */}
       {mentors.length === 0 ? (
         <p className="text-sm text-gray-500">
           No mentors found yet. Try a different search.
@@ -144,18 +140,21 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
                   </p>
                 </div>
               </div>
+
               <p className="text-xs text-gray-500 flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
                 {m.country || "Country not set"}
               </p>
+
               {m.expertise && (
                 <p className="text-xs text-gray-500 mt-1">
                   Expertise: {m.expertise}
                 </p>
               )}
+
               <button
                 type="button"
-                onClick={() => openBookingForm(m)}
+                onClick={() => setSelectedMentor(m)}
                 className="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
               >
                 <Calendar className="h-4 w-4" />
@@ -166,15 +165,12 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
         </div>
       )}
 
-      {/* Booking Form */}
       {selectedMentor && (
-        <form
-          onSubmit={handleCreateBooking}
-          className="mt-6 border-t pt-4 space-y-3"
-        >
+        <form onSubmit={handleCreateBooking} className="mt-6 border-t pt-4 space-y-3">
           <p className="font-semibold text-gray-900">
             Request session with {selectedMentor.full_name || "mentor"}
           </p>
+
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1">
               <label className="block text-xs text-gray-600 mb-1">Date</label>
@@ -185,6 +181,7 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
                 className="w-full border rounded-lg px-3 py-2 text-gray-900"
               />
             </div>
+
             <div className="flex-1">
               <label className="block text-xs text-gray-600 mb-1">Time</label>
               <input
@@ -205,7 +202,7 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
               value={program}
               onChange={(e) => setProgram(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 text-gray-900"
-              placeholder="e.g. MS in Computer Science, BBA, MBA..."
+              placeholder="e.g. MS in CS, BBA, MBA..."
             />
           </div>
 
@@ -230,6 +227,7 @@ export default function MentorSearch({ onBooked }: { onBooked?: () => void }) {
             >
               {creating ? "Sending request..." : "Send Request"}
             </button>
+
             <button
               type="button"
               onClick={() => setSelectedMentor(null)}

@@ -1,22 +1,40 @@
 import { NextResponse } from "next/server";
-import supabase from "@/lib/supabaseAdmin";
+import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function POST(req: Request) {
   try {
     const { bookingId } = await req.json();
 
+    if (!bookingId) {
+      return NextResponse.json(
+        { error: "Missing bookingId" },
+        { status: 400 }
+      );
+    }
+
+    // ✅ CREATE the Supabase admin client
+    const supabase = createSupabaseAdmin();
+
+    // ✅ Update booking status
     const { error } = await supabase
       .from("bookings")
       .update({ status: "confirmed" })
       .eq("id", bookingId);
 
     if (error) {
-      console.error(error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("Error confirming booking:", error);
+      return NextResponse.json(
+        { error: "Failed to confirm booking" },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (err) {
+    console.error("Accept booking error:", err);
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500 }
+    );
   }
 }

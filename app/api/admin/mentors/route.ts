@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import { createSupabaseServerClient } from "../../../../lib/supabaseServer";
+
 
 // -----------------------------
 // GET: Fetch all mentors

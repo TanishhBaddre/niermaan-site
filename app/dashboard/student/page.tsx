@@ -1,8 +1,9 @@
 "use client";
 
 import { Calendar, CheckCircle2, User } from "lucide-react";
-import MentorSearch from "@/components/MentorSearch";
-import StudentBookings from "@/components/StudentBookings";
+import MentorSearch from "../../../components/MentorSearch";
+import StudentBookings from "../../../components/StudentBookings";
+
 import { useState } from "react";
 
 export default function StudentDashboardPage() {

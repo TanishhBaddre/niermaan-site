@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "../../../../lib/supabaseServer";
+export const runtime = "nodejs";
 
+import { NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 export async function POST(req: Request) {
-  const supabase = await createSupabaseServerClient();
-
+  const supabase = createSupabaseServerClient();
   const { email, password } = await req.json();
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -12,7 +12,9 @@ export async function POST(req: Request) {
     password,
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 401 });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 401 });
+  }
 
   return NextResponse.json({ success: true });
 }

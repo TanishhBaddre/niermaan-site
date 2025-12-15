@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
+export const runtime = "nodejs";
 
 export async function GET() {
   const supabase = await createSupabaseServerClient();

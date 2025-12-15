@@ -1,56 +1,40 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-
 export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!,);
+import { NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function POST(req: Request) {
-  const rawBody = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const sig = req.headers.get("stripe-signature");
+
+  if (!sig) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+  }
 
   let event;
 
   try {
+    const body = await req.text();
     event = stripe.webhooks.constructEvent(
-      rawBody,
+      body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: any) {
-    console.error("❌ Invalid webhook signature:", err.message);
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    return NextResponse.json({ error: err.message }, { status: 400 });
   }
 
-  // -----------------------------
-  //   PAYMENT SUCCESS EVENT
-  // -----------------------------
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object as any;
+    const session: any = event.data.object;
+    const bookingId = session.metadata?.bookingId;
 
-    const bookingId = session.client_reference_id;
-
-    console.log("✔ Payment successful. Booking ID:", bookingId);
-
-    if (!bookingId) {
-      console.error("❌ No bookingId found in session");
-      return NextResponse.json({ error: "No bookingId" }, { status: 400 });
+    if (bookingId) {
+      await supabaseAdmin
+        .from("bookings")
+        .update({ status: "paid" })
+        .eq("id", bookingId);
     }
-
-    // Update booking to PAID
-    const { error } = await supabaseAdmin
-      .from("bookings")
-      .update({ status: "paid" })
-      .eq("id", bookingId);
-
-    if (error) {
-      console.error("❌ Database update failed:", error);
-      return NextResponse.json({ error: "DB update failed" }, { status: 500 });
-    }
-
-    console.log("✔ Booking updated to PAID");
   }
 
-  return NextResponse.json({ received: true }, { status: 200 });
+  return NextResponse.json({ received: true });
 }

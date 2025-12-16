@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { Th, Td } from "@/components/Table";
-import { Users, GraduationCap, CalendarDays, User, Book, DollarSign } from "lucide-react";
-
-
+import {
+  Users,
+  GraduationCap,
+  CalendarDays,
+} from "lucide-react";
 
 export default async function AdminDashboard() {
   const supabase = await createSupabaseServer();
@@ -12,7 +14,7 @@ export default async function AdminDashboard() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user || user.app_metadata.role !== "admin") {
+  if (!user || user.app_metadata?.role !== "admin") {
     redirect("/dashboard");
   }
 
@@ -24,38 +26,37 @@ export default async function AdminDashboard() {
     ]);
 
   return (
-    <div className="space-y-10">
-      <h1 className="text-4xl font-bold text-slate-800">Admin Dashboard</h1>
+    <div className="space-y-10 p-8">
+      <h1 className="text-4xl font-bold text-slate-800">
+        Admin Dashboard
+      </h1>
 
-      {/* Stat Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
         <StatCard
           label="Total Users"
           value={users?.length || 0}
-          icon={<Users className="text-blue-600" size={32} />}
+          icon={<Users size={32} className="text-blue-600" />}
         />
-        
         <StatCard
           label="Total Mentors"
           value={mentors?.length || 0}
-          icon={<GraduationCap className="text-blue-600" size={32} />}
+          icon={<GraduationCap size={32} className="text-blue-600" />}
         />
-
         <StatCard
           label="Total Bookings"
           value={bookings?.length || 0}
-          icon={<CalendarDays className="text-blue-600" size={32} />}
+          icon={<CalendarDays size={32} className="text-blue-600" />}
         />
       </div>
 
-      {/* Mentor Directory */}
-      <section className="mt-10">
-        <h2 className="text-2xl font-semibold text-slate-800 mb-4">
+      {/* Mentor Table */}
+      <section>
+        <h2 className="text-2xl font-semibold mb-4">
           Mentor Directory
         </h2>
 
-        <table className="min-w-full bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <table className="w-full bg-white border rounded-xl overflow-hidden">
           <thead className="bg-slate-100">
             <tr>
               <Th>Name</Th>
@@ -67,18 +68,17 @@ export default async function AdminDashboard() {
 
           <tbody>
             {mentors?.map((m: any) => (
-              <tr key={m.id} className="border-t hover:bg-slate-50 transition">
+              <tr key={m.id} className="border-t">
                 <Td>{m.full_name}</Td>
                 <Td>{m.country}</Td>
                 <Td>{m.university}</Td>
                 <Td>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium
-                    ${m.approved
-                      ? "bg-green-100 text-green-700"
-                      : "bg-amber-100 text-amber-700"
-                    }
-                  `}
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      m.approved
+                        ? "bg-green-100 text-green-700"
+                        : "bg-amber-100 text-amber-700"
+                    }`}
                   >
                     {m.approved ? "Approved" : "Pending"}
                   </span>
@@ -102,11 +102,11 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl flex items-center gap-4">
+    <div className="p-6 bg-white border rounded-xl flex items-center gap-4">
       {icon}
       <div>
-        <p className="text-slate-500 text-sm">{label}</p>
-        <p className="text-3xl font-bold text-slate-800">{value}</p>
+        <p className="text-sm text-slate-500">{label}</p>
+        <p className="text-3xl font-bold">{value}</p>
       </div>
     </div>
   );

@@ -3,7 +3,6 @@
 import { Calendar, CheckCircle2, User } from "lucide-react";
 import { useState } from "react";
 
-// ✅ RELATIVE IMPORTS — FINAL
 import MentorSearch from "../../../components/MentorSearch";
 import StudentBookings from "../../../components/StudentBookings";
 
@@ -20,10 +19,12 @@ export default function StudentDashboardPage() {
         <p className="text-sm tracking-wide text-gray-500 font-semibold">
           STUDENT PORTAL
         </p>
-        <h1 className="text-4xl font-bold text-gray-900">Welcome, Student</h1>
+        <h1 className="text-4xl font-bold text-gray-900">
+          Welcome, Student
+        </h1>
       </div>
 
-      <div className="bg-gradient-to-r from-blue-900 to-blue-600 text-white p-6 rounded-xl shadow-md flex justify-between items-center">
+      <div className="bg-gradient-to-r from-blue-900 to-blue-600 text-white p-6 rounded-xl flex justify-between items-center">
         <div>
           <p className="text-sm font-semibold text-yellow-300">
             PROFILE STATUS
@@ -37,17 +38,17 @@ export default function StudentDashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
-          icon={<User className="text-blue-700 h-8 w-8" />}
+          icon={<User className="h-8 w-8 text-blue-700" />}
           label="Saved Mentors"
           value={0}
         />
         <StatCard
-          icon={<Calendar className="text-blue-700 h-8 w-8" />}
+          icon={<Calendar className="h-8 w-8 text-blue-700" />}
           label="Upcoming Sessions"
           value={0}
         />
         <StatCard
-          icon={<CheckCircle2 className="text-blue-700 h-8 w-8" />}
+          icon={<CheckCircle2 className="h-8 w-8 text-blue-700" />}
           label="Completed Sessions"
           value={0}
         />
@@ -74,7 +75,7 @@ function StatCard({
         {icon}
         <p className="text-gray-500 font-medium">{label}</p>
       </div>
-      <p className="text-3xl font-bold mt-3 text-gray-900">{value}</p>
+      <p className="text-3xl font-bold text-gray-900">{value}</p>
     </div>
   );
 }
